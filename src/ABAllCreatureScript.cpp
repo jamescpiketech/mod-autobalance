@@ -1197,16 +1197,16 @@ void AutoBalance_AllCreatureScript::ModifyCreatureAttributes(Creature* creature)
     Powers pType = creature->getPowerType();
 
     creature->SetArmor(newFinalArmor);
-    creature->SetModifierValue(UNIT_MOD_ARMOR, BASE_VALUE, (float)newFinalArmor);
+    creature->SetStatFlatModifier(UNIT_MOD_ARMOR, BASE_VALUE, (float)newFinalArmor);
     creature->SetCreateHealth(newFinalHealth);
     creature->SetMaxHealth(newFinalHealth);
     creature->ResetPlayerDamageReq();
     creature->SetCreateMana(newFinalMana);
     creature->SetMaxPower(Powers::POWER_MANA, newFinalMana);
-    creature->SetModifierValue(UNIT_MOD_ENERGY, BASE_VALUE, (float)100.0f);
-    creature->SetModifierValue(UNIT_MOD_RAGE, BASE_VALUE, (float)100.0f);
-    creature->SetModifierValue(UNIT_MOD_HEALTH, BASE_VALUE, (float)newFinalHealth);
-    creature->SetModifierValue(UNIT_MOD_MANA, BASE_VALUE, (float)newFinalMana);
+    creature->SetStatFlatModifier(UNIT_MOD_ENERGY, BASE_VALUE, (float)100.0f);
+    creature->SetStatFlatModifier(UNIT_MOD_RAGE, BASE_VALUE, (float)100.0f);
+    creature->SetStatFlatModifier(UNIT_MOD_HEALTH, BASE_VALUE, (float)newFinalHealth);
+    creature->SetStatFlatModifier(UNIT_MOD_MANA, BASE_VALUE, (float)newFinalMana);
     creatureABInfo->ScaledHealthMultiplier = scaledHealthMultiplier;
     creatureABInfo->ScaledManaMultiplier = scaledManaMultiplier;
     creatureABInfo->ScaledArmorMultiplier = scaledArmorMultiplier;
