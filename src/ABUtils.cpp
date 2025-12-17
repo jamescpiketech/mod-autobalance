@@ -116,16 +116,23 @@ void AddCreatureToMapCreatureList(Creature* creature, bool addToCreatureList, bo
                 //
                 else
                 {
-                    //
-                    // Match the summoner's level
-                    //
-                    creatureABInfo->UnmodifiedLevel = summonerABInfo->UnmodifiedLevel;
+                    if (LevelScaling)
+                    {
+                        creatureABInfo->UnmodifiedLevel = summonerABInfo->UnmodifiedLevel;
 
-                    LOG_DEBUG("module.AutoBalance", "AutoBalance::AddCreatureToMapCreatureList: Creature {} ({}) (summon) | original level will match summoner's level ({}).",
-                        creature->GetName(),
-                        creatureABInfo->UnmodifiedLevel,
-                        summonerABInfo->UnmodifiedLevel
-                    );
+                        LOG_DEBUG("module.AutoBalance", "AutoBalance::AddCreatureToMapCreatureList: Creature {} ({}) (summon) | original level will match summoner's level ({}).",
+                            creature->GetName(),
+                            creatureABInfo->UnmodifiedLevel,
+                            summonerABInfo->UnmodifiedLevel
+                        );
+                    }
+                    else
+                    {
+                        LOG_DEBUG("module.AutoBalance", "AutoBalance::AddCreatureToMapCreatureList: Creature {} ({}) (summon) | level scaling disabled; keeping original level.",
+                            creature->GetName(),
+                            creatureABInfo->UnmodifiedLevel
+                        );
+                    }
                 }
             }
         }
