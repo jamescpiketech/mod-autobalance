@@ -663,6 +663,14 @@ void AutoBalance_AllCreatureScript::ModifyCreatureAttributes(Creature* creature)
     float statMod_damage = statModifiers.damage;
     float statMod_ccDuration = statModifiers.ccduration;
 
+    // Disable mana and armor scaling by canceling the curve/global multipliers.
+    float curveGlobal = defaultMultiplier * statMod_global;
+    if (curveGlobal > 0.0f)
+    {
+        statMod_mana = 1.0f / curveGlobal;
+        statMod_armor = 1.0f / curveGlobal;
+    }
+
     // Storage for the final values applied to the creature
     uint32 newFinalHealth = 0;
     uint32 newFinalMana = 0;
