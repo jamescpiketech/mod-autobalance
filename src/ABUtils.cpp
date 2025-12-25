@@ -199,8 +199,7 @@ void AddCreatureToMapCreatureList(Creature* creature, bool addToCreatureList, bo
         // if this is a summon, we shouldn't track it in any list and it does not contribute to the average level
         //
 
-        LOG_DEBUG("module.AutoBalance", "AutoBalance::AddCreatureToMapCreatureList: Creature {} ({}) (summon) | will not affect the map's stats.", creature->GetName(), creatureABInfo->UnmodifiedLevel);
-        return;
+        LOG_DEBUG("module.AutoBalance", "AutoBalance::AddCreatureToMapCreatureList: Creature {} ({}) (summon) | will proceed to map stats unless skipped as player-controlled.", creature->GetName(), creatureABInfo->UnmodifiedLevel);
     }
     //
     // Handle "special" creatures
