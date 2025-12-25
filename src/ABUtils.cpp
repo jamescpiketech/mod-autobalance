@@ -199,7 +199,7 @@ void AddCreatureToMapCreatureList(Creature* creature, bool addToCreatureList, bo
         // if this is a summon, we shouldn't track it in any list and it does not contribute to the average level
         //
 
-        LOG_DEBUG("module.AutoBalance", "AutoBalance::AddCreatureToMapCreatureList: Creature {} ({}) (summon) | will proceed to map stats unless skipped as player-controlled.", creature->GetName(), creatureABInfo->UnmodifiedLevel);
+        LOG_DEBUG("module.AutoBalance", "AutoBalance::AddCreatureToMapCreatureList: Creature {} ({}) (summon) | will not affect the map's stats.", creature->GetName(), creatureABInfo->UnmodifiedLevel);
     }
     //
     // Handle "special" creatures
@@ -274,11 +274,14 @@ void AddCreatureToMapCreatureList(Creature* creature, bool addToCreatureList, bo
         return;
     }
 
+    // NPC summons (not player-controlled) should bypass level-range flavor filtering.
+    bool isNpcSummon = creature->IsSummon() && !creature->IsControlledByPlayer();
+
     //
     // If the creature level is below 85% of the minimum LFG level, assume it's a flavor creature and shouldn't be tracked
     //
 
-    if (creatureABInfo->UnmodifiedLevel < (uint8)(((float)mapABInfo->lfgMinLevel * 0.85f) + 0.5f))
+    if (!isNpcSummon && creatureABInfo->UnmodifiedLevel < (uint8)(((float)mapABInfo->lfgMinLevel * 0.85f) + 0.5f))
     {
         LOG_DEBUG("module.AutoBalance", "AutoBalance::AddCreatureToMapCreatureList: Creature {} ({}) | is below 85% of the LFG min level of {} and will not affect the map's stats.", creature->GetName(), creatureABInfo->UnmodifiedLevel, mapABInfo->lfgMinLevel);
         return;
@@ -288,7 +291,7 @@ void AddCreatureToMapCreatureList(Creature* creature, bool addToCreatureList, bo
     // If the creature level is above 125% of the maximum LFG level, assume it's a flavor creature or holiday boss and shouldn't be tracked
     //
 
-    if (creatureABInfo->UnmodifiedLevel > (uint8)(((float)mapABInfo->lfgMaxLevel * 1.15f) + 0.5f))
+    if (!isNpcSummon && creatureABInfo->UnmodifiedLevel > (uint8)(((float)mapABInfo->lfgMaxLevel * 1.15f) + 0.5f))
     {
         LOG_DEBUG("module.AutoBalance", "AutoBalance::AddCreatureToMapCreatureList: Creature {} ({}) | is above 115% of the LFG max level of {} and will not affect the map's stats.", creature->GetName(), creatureABInfo->UnmodifiedLevel, mapABInfo->lfgMaxLevel);
         return;
