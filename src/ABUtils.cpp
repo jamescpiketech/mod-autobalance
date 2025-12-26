@@ -116,21 +116,24 @@ void AddCreatureToMapCreatureList(Creature* creature, bool addToCreatureList, bo
                 //
                 else
                 {
-                    if (LevelScaling)
+                    if (creature->GetEntry() == 351084)
                     {
+                        // Deathknight Understudy: keep original level to preserve mechanics (e.g., Mind Control tuning).
+                        creatureABInfo->neverLevelScale = true;
+
+                        LOG_DEBUG("module.AutoBalance", "AutoBalance::AddCreatureToMapCreatureList: Creature {} ({}) (summon) | exempt from level sync; keeping original level.",
+                            creature->GetName(),
+                            creatureABInfo->UnmodifiedLevel);
+                    }
+                    else
+                    {
+                        // Match the summoner's level for all other NPC summons.
                         creatureABInfo->UnmodifiedLevel = summonerABInfo->UnmodifiedLevel;
 
                         LOG_DEBUG("module.AutoBalance", "AutoBalance::AddCreatureToMapCreatureList: Creature {} ({}) (summon) | original level will match summoner's level ({}).",
                             creature->GetName(),
                             creatureABInfo->UnmodifiedLevel,
                             summonerABInfo->UnmodifiedLevel
-                        );
-                    }
-                    else
-                    {
-                        LOG_DEBUG("module.AutoBalance", "AutoBalance::AddCreatureToMapCreatureList: Creature {} ({}) (summon) | level scaling disabled; keeping original level.",
-                            creature->GetName(),
-                            creatureABInfo->UnmodifiedLevel
                         );
                     }
                 }
@@ -200,6 +203,7 @@ void AddCreatureToMapCreatureList(Creature* creature, bool addToCreatureList, bo
         //
 
         LOG_DEBUG("module.AutoBalance", "AutoBalance::AddCreatureToMapCreatureList: Creature {} ({}) (summon) | will not affect the map's stats.", creature->GetName(), creatureABInfo->UnmodifiedLevel);
+        return;
     }
     //
     // Handle "special" creatures
