@@ -22,6 +22,7 @@ std::map<uint32, AutoBalanceStatModifiers> statModifierBossOverrides;
 std::map<uint32, AutoBalanceStatModifiers> statModifierCreatureOverrides;
 std::map<uint8, AutoBalanceLevelScalingDynamicLevelSettings> levelScalingDynamicLevelOverrides;
 std::map<uint32, uint32> levelScalingDistanceCheckOverrides;
+std::map<uint32, std::map<int8, uint8>> levelScalingPerInstanceMap;
 
 // spell IDs that spend player health
 // player abilities don't actually appear to be caught by `ModifySpellDamageTaken`,

@@ -698,6 +698,7 @@ World_Multipliers getWorldMultiplier(Map* map, BaseValueType baseValueType)
     // Grab map data
     //
     AutoBalanceMapInfo *mapABInfo = GetMapInfo(map);
+    bool allowLevelScaling = LevelScaling && IsLevelScalingAllowed(map);
 
     //
     // If the map isn't enabled, return defaults
@@ -787,7 +788,7 @@ World_Multipliers getWorldMultiplier(Map* map, BaseValueType baseValueType)
     // Only scale based on level if level scaling is enabled and the instance's average creature level is not within the skip range
     //
 
-    if (LevelScaling &&
+    if (allowLevelScaling &&
             (
                 (mapABInfo->avgCreatureLevel > mapABInfo->highestPlayerLevel + mapABInfo->levelScalingSkipHigherLevels || mapABInfo->levelScalingSkipHigherLevels == 0) ||
                 (mapABInfo->avgCreatureLevel < mapABInfo->highestPlayerLevel - mapABInfo->levelScalingSkipLowerLevels || mapABInfo->levelScalingSkipLowerLevels == 0)
@@ -900,9 +901,9 @@ World_Multipliers getWorldMultiplier(Map* map, BaseValueType baseValueType)
         // Level scaling is disabled
         //
 
-        if (!LevelScaling)
+        if (!allowLevelScaling)
         {
-            LOG_DEBUG("module.AutoBalance", "AutoBalance::getWorldMultiplier: Map {} ({}) | not level scaled due to level scaling being disabled. World multiplier target level set to avgCreatureLevel ({}).",
+            LOG_DEBUG("module.AutoBalance", "AutoBalance::getWorldMultiplier: Map {} ({}) | not level scaled due to level scaling being disabled or not allowed by AutoBalance.LevelScaling.PerInstance. World multiplier target level set to avgCreatureLevel ({}).",
                 map->GetMapName(),
                 mapABInfo->worldMultiplierTargetLevel,
                 mapABInfo->worldMultiplierTargetLevel
@@ -1600,6 +1601,34 @@ bool hasLevelScalingDistanceCheckOverride(uint32 dungeonId)
     return (levelScalingDistanceCheckOverrides.find(dungeonId) != levelScalingDistanceCheckOverrides.end());
 }
 
+bool IsLevelScalingAllowed(Map* map)
+{
+    if (!map || !map->IsDungeon())
+        return false;
+
+    if (levelScalingPerInstanceMap.empty())
+        return false;
+
+    auto itr = levelScalingPerInstanceMap.find(map->GetId());
+    if (itr == levelScalingPerInstanceMap.end())
+        return false;
+
+    int8 difficulty = static_cast<int8>(map->GetDifficulty());
+    auto diffItr = itr->second.find(difficulty);
+
+    if (diffItr == itr->second.end())
+        diffItr = itr->second.find(-1);
+
+    if (diffItr == itr->second.end())
+        return false;
+
+    AutoBalanceMapInfo* mapABInfo = GetMapInfo(map);
+    if (!mapABInfo || mapABInfo->highestPlayerLevel == 0)
+        return false;
+
+    return mapABInfo->highestPlayerLevel > diffItr->second;
+}
+
 bool hasStatModifierBossOverride(uint32 dungeonId)
 {
     return (statModifierBossOverrides.find(dungeonId) != statModifierBossOverrides.end());
@@ -1999,6 +2028,42 @@ std::map<uint8, AutoBalanceLevelScalingDynamicLevelSettings> LoadDynamicLevelOve
     }
 
     return overrideMap;
+}
+
+std::map<uint32, std::map<int8, uint8>> LoadLevelScalingPerInstance(std::string instanceListString)
+{
+    std::string       delimitedValue;
+    std::stringstream instanceStream;
+    std::map<uint32, std::map<int8, uint8>> allowListMap;
+
+    instanceStream.str(instanceListString);
+
+    while (std::getline(instanceStream, delimitedValue, ','))
+    {
+        if (delimitedValue.find_first_not_of(" \t") == std::string::npos)
+            continue;
+
+        std::stringstream entryStream(delimitedValue);
+        int mapId = 0;
+        int difficulty = 0;
+        int triggerLevel = 0;
+
+        if (!(entryStream >> mapId) || !(entryStream >> difficulty) || !(entryStream >> triggerLevel))
+        {
+            LOG_WARN("server.loading", "mod-autobalance: invalid value `{}` for `AutoBalance.LevelScaling.PerInstance` defined in `AutoBalance.conf`. Expected format: \"[InstanceID] [Difficulty] [TriggerLevel]\".", delimitedValue);
+            continue;
+        }
+
+        if (mapId <= 0 || difficulty < -1 || difficulty > 3 || triggerLevel < 0 || triggerLevel > 255)
+        {
+            LOG_WARN("server.loading", "mod-autobalance: invalid value `{}` for `AutoBalance.LevelScaling.PerInstance` defined in `AutoBalance.conf`. InstanceID must be > 0, Difficulty must be between -1 and 3, and TriggerLevel must be between 0 and 255.", delimitedValue);
+            continue;
+        }
+
+        allowListMap[static_cast<uint32>(mapId)][static_cast<int8>(difficulty)] = static_cast<uint8>(triggerLevel);
+    }
+
+    return allowListMap;
 }
 
 
@@ -2878,7 +2943,9 @@ bool UpdateMapDataIfNeeded(Map* map, bool force)
         // Set the map level to the average creature level, rounded to the nearest integer
         //
 
-        if (!LevelScaling ||
+        bool allowLevelScaling = LevelScaling && IsLevelScalingAllowed(map);
+
+        if (!allowLevelScaling ||
             ((mapABInfo->avgCreatureLevel <= mapABInfo->highestPlayerLevel + mapABInfo->levelScalingSkipHigherLevels && mapABInfo->levelScalingSkipHigherLevels != 0) &&
              (mapABInfo->avgCreatureLevel >= mapABInfo->highestPlayerLevel - mapABInfo->levelScalingSkipLowerLevels && mapABInfo->levelScalingSkipLowerLevels != 0)))
         {
@@ -2892,7 +2959,7 @@ bool UpdateMapDataIfNeeded(Map* map, bool force)
 
             if (mapABInfo->prevMapLevel != mapABInfo->mapLevel)
             {
-                LOG_DEBUG("module.AutoBalance", "AutoBalance::UpdateMapDataIfNeeded: Map {} ({}{}, {}-player {}) | Level scaling is disabled. Map level tracking stat updated {}{} (original level).",
+                LOG_DEBUG("module.AutoBalance", "AutoBalance::UpdateMapDataIfNeeded: Map {} ({}{}, {}-player {}) | Level scaling is disabled or not allowed by AutoBalance.LevelScaling.PerInstance. Map level tracking stat updated {}{} (original level).",
                     map->GetMapName(),
                     map->GetId(),
                     map->GetInstanceId() ? "-" + std::to_string(map->GetInstanceId()) : "",

@@ -22,6 +22,7 @@ extern std::map<uint32, AutoBalanceStatModifiers>                    statModifie
 extern std::map<uint32, AutoBalanceStatModifiers>                    statModifierCreatureOverrides;
 extern std::map<uint8 , AutoBalanceLevelScalingDynamicLevelSettings> levelScalingDynamicLevelOverrides;
 extern std::map<uint32, uint32>                                      levelScalingDistanceCheckOverrides;
+extern std::map<uint32, std::map<int8, uint8>>                       levelScalingPerInstanceMap;
 
 extern std::map <int, int>                                           forcedCreatureIds;
 extern std::list<uint32>                                             disabledDungeonIds;

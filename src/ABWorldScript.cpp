@@ -25,6 +25,7 @@ void AutoBalance_WorldScript::SetInitialWorldSettings()
     statModifierCreatureOverrides.clear();
     levelScalingDynamicLevelOverrides.clear();
     levelScalingDistanceCheckOverrides.clear();
+    levelScalingPerInstanceMap.clear();
 
     LoadForcedCreatureIdsFromString(sConfigMgr->GetOption<std::string>("AutoBalance.ForcedID40", ""), 40);
     LoadForcedCreatureIdsFromString(sConfigMgr->GetOption<std::string>("AutoBalance.ForcedID25", ""), 25);
@@ -429,6 +430,8 @@ void AutoBalance_WorldScript::SetInitialWorldSettings()
     //
 
     LevelScaling = sConfigMgr->GetOption<bool>("AutoBalance.LevelScaling", true);
+    levelScalingPerInstanceMap = LoadLevelScalingPerInstance(
+        sConfigMgr->GetOption<std::string>("AutoBalance.LevelScaling.PerInstance", "", false));
 
     std::string LevelScalingMethodString = sConfigMgr->GetOption<std::string>("AutoBalance.LevelScaling.Method", "dynamic", false);
 

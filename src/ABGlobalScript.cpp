@@ -17,8 +17,10 @@ void AutoBalance_GlobalScript::OnAfterUpdateEncounterState(Map* map, EncounterCr
     if (mapABInfo->adjustedPlayerCount < MinPlayerReward)
         return;
 
+    bool allowLevelScaling = LevelScaling && IsLevelScalingAllowed(map);
+
     // skip if it's not a pre-wotlk dungeon/raid and if it's not scaled
-    if (!LevelScaling || mapABInfo->mapLevel <= 70 || mapABInfo->lfgMinLevel <= 70
+    if (!allowLevelScaling || mapABInfo->mapLevel <= 70 || mapABInfo->lfgMinLevel <= 70
         // skip when not in dungeon or not kill credit
         || type != ENCOUNTER_CREDIT_KILL_CREATURE || !map->IsDungeon())
         return;

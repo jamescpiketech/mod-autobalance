@@ -719,6 +719,22 @@ AutoBalance.DisabledID=""
 AutoBalance.LevelScaling=1
 
 #
+#     AutoBalance.LevelScaling.PerInstance
+#        Limits level scaling to specific InstanceID + Difficulty pairs.
+#        Format: "[InstanceID] [Difficulty] [TriggerLevel], [InstanceID] [Difficulty] [TriggerLevel], ..."
+#
+#        Difficulty values:
+#            Dungeons: 0=normal, 1=heroic, 2=epic
+#            Raids: 0=10N, 1=25N, 2=10H, 3=25H
+#
+#        Use Difficulty -1 to include all difficulties for that InstanceID.
+#        Level scaling triggers only when highest player level is greater than TriggerLevel.
+#        If empty, no instances are level scaled (even if AutoBalance.LevelScaling=1).
+#
+#        Default: ""
+AutoBalance.LevelScaling.PerInstance=""
+
+#
 #     AutoBalance.LevelScaling.Method
 #        Selects which method should be used when the level for scaled creatures.
 #

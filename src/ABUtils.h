@@ -49,6 +49,7 @@ void LoadForcedCreatureIdsFromString(std::string creatureIds, int forcedPlayerCo
 std::list<uint32> LoadDisabledDungeons(std::string dungeonIdString);
 std::map <uint32, uint32> LoadDistanceCheckOverrides(std::string dungeonIdString);
 std::map <uint8 , AutoBalanceLevelScalingDynamicLevelSettings> LoadDynamicLevelOverrides(std::string dungeonIdString);
+std::map <uint32, std::map<int8, uint8>> LoadLevelScalingPerInstance(std::string instanceListString);
 std::map <uint32, AutoBalanceInflectionPointSettings> LoadInflectionPointOverrides(std::string dungeonIdString);
 void LoadMapSettings(Map* map);
 std::map <uint32, uint8> LoadMinPlayersPerDungeonId(std::string minPlayersString);
@@ -60,5 +61,6 @@ void AddPlayerToMap(Map* map, Player* player);
 bool RemovePlayerFromMap(Map* map, Player* player);
 bool UpdateMapDataIfNeeded(Map* map, bool force = false);
 AutoBalanceMapInfo* GetMapInfo(Map* map);
+bool IsLevelScalingAllowed(Map* map);
 
 #endif

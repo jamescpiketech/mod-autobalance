@@ -422,6 +422,7 @@ void AutoBalance_AllCreatureScript::ModifyCreatureAttributes(Creature* creature)
     Map* map = creature->GetMap();
     InstanceMap* instanceMap = map->ToInstanceMap();
     AutoBalanceMapInfo* mapABInfo = GetMapInfo(instanceMap);
+    bool allowLevelScaling = LevelScaling && IsLevelScalingAllowed(map);
 
     // mark the creature as updated using the current settings if needed
     // if this creature is brand new, do not update this so that it will be re-processed next OnCreatureUpdate
@@ -546,7 +547,7 @@ void AutoBalance_AllCreatureScript::ModifyCreatureAttributes(Creature* creature)
     // only scale levels if level scaling is enabled and the instance's average creature level is not within the skip range
     if
         (
-            LevelScaling &&
+            allowLevelScaling &&
             (
                 (mapABInfo->avgCreatureLevel > mapABInfo->highestPlayerLevel + mapABInfo->levelScalingSkipHigherLevels || mapABInfo->levelScalingSkipHigherLevels == 0) ||
                 (mapABInfo->avgCreatureLevel < mapABInfo->highestPlayerLevel - mapABInfo->levelScalingSkipLowerLevels || mapABInfo->levelScalingSkipLowerLevels == 0)
@@ -616,9 +617,9 @@ void AutoBalance_AllCreatureScript::ModifyCreatureAttributes(Creature* creature)
             }
         }
     }
-    else if (!LevelScaling)
+    else if (!allowLevelScaling)
     {
-        LOG_DEBUG("module.AutoBalance", "AutoBalance_AllCreatureScript::ModifyCreatureAttributes: Creature {} ({}) | not level scaled due to level scaling being disabled.", creature->GetName(), creatureABInfo->UnmodifiedLevel);
+        LOG_DEBUG("module.AutoBalance", "AutoBalance_AllCreatureScript::ModifyCreatureAttributes: Creature {} ({}) | not level scaled due to level scaling being disabled or not allowed by AutoBalance.LevelScaling.PerInstance.", creature->GetName(), creatureABInfo->UnmodifiedLevel);
         creatureABInfo->selectedLevel = creatureABInfo->UnmodifiedLevel;
     }
     else if (creatureABInfo->neverLevelScale)
@@ -713,7 +714,7 @@ void AutoBalance_AllCreatureScript::ModifyCreatureAttributes(Creature* creature)
     creatureABInfo->HealthMultiplier = healthMultiplier;
 
     // only level scale health if level scaling is enabled and the creature level has been altered
-    if (LevelScaling && creatureABInfo->selectedLevel != creatureABInfo->UnmodifiedLevel)
+    if (allowLevelScaling && creatureABInfo->selectedLevel != creatureABInfo->UnmodifiedLevel)
     {
         // the max health that the creature had before we did anything with it
         float origHealth = origCreatureBaseStats->GenerateHealth(creatureTemplate);
@@ -861,7 +862,7 @@ void AutoBalance_AllCreatureScript::ModifyCreatureAttributes(Creature* creature)
         );
 
         // only level scale mana if level scaling is enabled and the creature level has been altered
-        if (LevelScaling && creatureABInfo->selectedLevel != creatureABInfo->UnmodifiedLevel)
+        if (allowLevelScaling && creatureABInfo->selectedLevel != creatureABInfo->UnmodifiedLevel)
         {
             // the max mana that the creature had before we did anything with it
             uint32 origMana = origCreatureBaseStats->GenerateMana(creatureTemplate);
@@ -965,7 +966,7 @@ void AutoBalance_AllCreatureScript::ModifyCreatureAttributes(Creature* creature)
     creatureABInfo->ArmorMultiplier = armorMultiplier;
 
     // only level scale armor if level scaling is enabled and the creature level has been altered
-    if (LevelScaling && creatureABInfo->selectedLevel != creatureABInfo->UnmodifiedLevel)
+    if (allowLevelScaling && creatureABInfo->selectedLevel != creatureABInfo->UnmodifiedLevel)
     {
         // the armor that the creature had before we did anything with it
         uint32 origArmor = origCreatureBaseStats->GenerateArmor(creatureTemplate);
@@ -1086,7 +1087,7 @@ void AutoBalance_AllCreatureScript::ModifyCreatureAttributes(Creature* creature)
     );
 
     // only level scale damage if level scaling is enabled and the creature level has been altered
-    if (LevelScaling && creatureABInfo->selectedLevel != creatureABInfo->UnmodifiedLevel)
+    if (allowLevelScaling && creatureABInfo->selectedLevel != creatureABInfo->UnmodifiedLevel)
     {
 
         // the original base damage of the creature
